@@ -1,0 +1,74 @@
+<div class="card">
+  <div class="flex items-center justify-between gap-3 mb-3">
+    <h2 class="text-lg font-semibold">Alumnos</h2>
+    <input class="inp" [ngModel]="q()" (ngModelChange)="onBuscarChange($event)"
+           placeholder="Buscar por código o nombre..." />
+  </div>
+
+  <div class="overflow-x-auto border rounded-lg">
+    <table class="w-full text-sm">
+      <thead class="bg-slate-100 text-slate-700">
+      <tr>
+        <th class="th">Código</th>
+        <th class="th">Nombres</th>
+        <th class="th">Apellidos</th>
+        <th class="th">Email</th>
+        <th class="th">Estado</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let a of alumnos()" class="border-t hover:bg-slate-50">
+        <td class="td">{{ a.codigo }}</td>
+        <td class="td">{{ a.nombres }}</td>
+        <td class="td">{{ a.apellidos }}</td>
+        <td class="td">{{ a.email }}</td>
+        <td class="td">
+          <span class="px-2 py-0.5 rounded text-xs"
+                [class.bg-green-100]="a.activo" [class.text-green-700]="a.activo"
+                [class.bg-red-100]="!a.activo" [class.text-red-700]="!a.activo">
+            {{ a.activo ? 'Activo' : 'Inactivo' }}
+          </span>
+        </td>
+      </tr>
+      <tr *ngIf="!loading() && alumnos().length===0">
+        <td class="td text-center text-slate-500" colspan="5">Sin resultados</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-3">
+    <div class="text-sm text-slate-600">
+      Página {{ paginacion().actual + 1 }} / {{ paginacion().totalPaginas || 1 }}
+      — {{ paginacion().totalElementos }} alumnos
+    </div>
+
+    <div class="flex items-center gap-1">
+      <button class="btn" (click)="first()" [disabled]="paginacion().actual===0">«</button>
+      <button class="btn" (click)="prev()"  [disabled]="paginacion().actual===0">‹</button>
+
+      <button *ngFor="let p of paginasVisibles()"
+              class="btn"
+              [class.active]="p===paginacion().actual"
+              (click)="ir(p)">
+        {{ p + 1 }}
+      </button>
+
+      <button class="btn" (click)="next()"
+              [disabled]="paginacion().actual>=paginacion().totalPaginas-1">›</button>
+      <button class="btn" (click)="last()"
+              [disabled]="paginacion().actual>=paginacion().totalPaginas-1">»</button>
+
+      <select class="ml-2 border rounded px-2 py-1"
+              [ngModel]="paginacion().tamanio"
+              (ngModelChange)="cambiarTamanio($event)">
+        <option [ngValue]="10">10</option>
+        <option [ngValue]="20">20</option>
+        <option [ngValue]="50">50</option>
+      </select>
+    </div>
+  </div>
+
+  <div *ngIf="loading()" class="mt-2 text-slate-500">Cargando…</div>
+  <div *ngIf="error()"   class="mt-2 text-red-600">⚠ {{ error() }}</div>
+</div>
