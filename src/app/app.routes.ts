@@ -1,4 +1,3 @@
-// src/app/app.routes.ts
 import { Routes } from '@angular/router';
 import AUTH_ROUTES from './features/authentication/authentication.routes';
 import { AuthGuard } from './core/auth/guards/auth.guard';
@@ -6,17 +5,11 @@ import { NoAuthGuard } from './core/auth/guards/noAuth.guard';
 import { MainLayoutComponent } from './layout/components/main-layout/main-layout';
 
 export const routes: Routes = [
-  // Al entrar a '/', manda al login
-  { path: '', pathMatch: 'full', redirectTo: 'auth/login' },
-
-  // Segmento público (login, registro, etc.)
   {
     path: 'auth',
     canActivate: [NoAuthGuard],
-    children: AUTH_ROUTES, // aquí vive /auth/login
+    children: AUTH_ROUTES,
   },
-
-  // Todo lo privado va dentro del layout (header/sidebar persistentes)
   {
     path: '',
     component: MainLayoutComponent,
@@ -28,17 +21,38 @@ export const routes: Routes = [
           import('./features/dashboard/dashboard').then(m => m.DashboardComponent),
       },
       {
+        path: 'dashboard-admin',
+        loadComponent: () =>
+          import('./features/dashboard/dashboard-admin.component').then(m => m.DashboardAdminComponent),
+      },
+      {
         path: 'alumnos',
         loadComponent: () =>
-          import('./features/alumno/components/alumno/alumno')
-            .then(m => m.AlumnoComponent),
+          import('./features/alumno/components/alumno/alumno').then(m => m.AlumnoComponent),
       },
-      // aquí agregas más páginas privadas:
-      // { path: 'users', loadComponent: () => import('./features/users/users').then(m => m.UsersComponent) },
-      // { path: 'reports', loadComponent: () => import('./features/reports/reports').then(m => m.ReportsComponent) },
+      {
+        path: 'notas',
+        loadComponent: () =>
+          import('./features/notas/components/nota/notas').then(m => m.NotasComponent),
+      },
+      {
+        path: 'reservas',
+        loadComponent: () =>
+          import('./features/reserva/components/reserva/reserva').then(m => m.ReservaComponent),
+      },
+      {
+        path: 'solicitudes',
+        loadComponent: () =>
+          import('./features/solicitudes/components/solicitudes/solicitudes.components').then(m => m.SolicitudesMaterialComponent),
+      },
+      {
+        path: 'solicitudes/reprogramacion',
+        loadComponent: () =>
+          import('./features/solicitudes/components/solicitudes/solicitudes-reprogramacion.component').then(m => m.SolicitudesReprogramacionComponent),
+      },
+      { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
+      { path: '**', redirectTo: 'dashboard' }
     ],
   },
-
-  // Cualquier otra ruta -> login
-  { path: '**', redirectTo: 'auth/login' },
+  { path: '**', redirectTo: 'auth/login' }
 ];

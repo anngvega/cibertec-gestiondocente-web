@@ -1,35 +1,30 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
+import { DatePipe, NgForOf, NgIf } from '@angular/common';
 
 @Component({
   standalone: true,
   selector: 'app-dashboard',
-  imports: [CommonModule],
-  template: `
-    <div class="space-y-4">
-      <h1 class="text-2xl font-semibold">Dashboard</h1>
-      <p class="text-gray-600">Bienvenido al sistema RRHH. Selecciona una opción en el menú lateral.</p>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div class="p-4 rounded-lg bg-white border border-gray-200">
-          <div class="text-sm text-gray-500">Ejemplo</div>
-          <div class="mt-1 text-2xl font-semibold">123</div>
-        </div>
-        <div class="p-4 rounded-lg bg-white border border-gray-200">
-          <div class="text-sm text-gray-500">Ejemplo</div>
-          <div class="mt-1 text-2xl font-semibold">456</div>
-        </div>
-        <div class="p-4 rounded-lg bg-white border border-gray-200">
-          <div class="text-sm text-gray-500">Ejemplo</div>
-          <div class="mt-1 text-2xl font-semibold">789</div>
-        </div>
-      </div>
-    </div>
-  `
+  imports: [DatePipe, NgForOf, NgIf],
+  templateUrl: './dashboard.html'
 })
-export class DashboardComponent {
-  cards = [
-    { label: 'Ejemplo', value: 123 },
-    { label: 'Ejemplo', value: 456 },
-    { label: 'Ejemplo', value: 789 },
-  ];
+export class DashboardComponent implements OnInit {
+  private http = inject(HttpClient);
+  notasHoy = 0;
+  reservas: any[] = [];
+
+  ngOnInit() {
+    this.http.get<any>(`${environment.apiUrl}/api/stats/docente`)
+      .subscribe({
+        next: (res) => {
+          this.notasHoy = res?.notasHoy ?? 0;
+          this.reservas = res?.proximasReservas ?? [];
+        },
+        error: () => {
+          this.notasHoy = 0;
+          this.reservas = [];
+        }
+      });
+  }
 }

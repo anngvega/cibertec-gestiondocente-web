@@ -1,8 +1,33 @@
 <div class="card">
   <div class="flex items-center justify-between gap-3 mb-3">
-    <h2 class="text-lg font-semibold">Alumnos</h2>
-    <input class="inp" [ngModel]="q()" (ngModelChange)="onBuscarChange($event)"
+    <div class="flex items-center gap-3">
+      <h2 class="text-lg font-semibold">Alumnos</h2>
+
+      <!-- Combo de cursos (solo visible para docentes) -->
+      <select *ngIf="role === 'DOCENTE'"
+              class="inp min-w-64"
+              [ngModel]="cursoSel"
+              (ngModelChange)="onCursoChange($event)">
+        <option [ngValue]="null">-- Selecciona curso --</option>
+        <option *ngFor="let c of cursos" [ngValue]="c.id">
+          {{ c.codigo }} — {{ c.nombre }}
+        </option>
+      </select>
+
+      <!-- Texto informativo para administrativos -->
+      <span *ngIf="role === 'ADMINISTRATIVO'" class="text-slate-500 text-sm ml-2">
+        (Mostrando todos los alumnos)
+      </span>
+    </div>
+
+    <!-- Búsqueda -->
+    <input class="inp w-64" [ngModel]="q()" (ngModelChange)="onBuscarChange($event)"
            placeholder="Buscar por código o nombre..." />
+  </div>
+
+  <div *ngIf="role==='DOCENTE' && !cursoSel"
+       class="mb-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded px-3 py-2">
+    Selecciona un curso para listar a tus alumnos matriculados.
   </div>
 
   <div class="overflow-x-auto border rounded-lg">
@@ -23,11 +48,11 @@
         <td class="td">{{ a.apellidos }}</td>
         <td class="td">{{ a.email }}</td>
         <td class="td">
-          <span class="px-2 py-0.5 rounded text-xs"
-                [class.bg-green-100]="a.activo" [class.text-green-700]="a.activo"
-                [class.bg-red-100]="!a.activo" [class.text-red-700]="!a.activo">
-            {{ a.activo ? 'Activo' : 'Inactivo' }}
-          </span>
+            <span class="px-2 py-0.5 rounded text-xs"
+                  [class.bg-green-100]="a.activo" [class.text-green-700]="a.activo"
+                  [class.bg-red-100]="!a.activo" [class.text-red-700]="!a.activo">
+              {{ a.activo ? 'Activo' : 'Inactivo' }}
+            </span>
         </td>
       </tr>
       <tr *ngIf="!loading() && alumnos().length===0">

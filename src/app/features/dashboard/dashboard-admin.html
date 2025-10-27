@@ -1,0 +1,45 @@
+<div class="space-y-6">
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="bg-white p-4 rounded-lg shadow text-center">
+      <h3 class="text-sm text-slate-500">Reservas activas</h3>
+      <p class="text-3xl font-semibold text-indigo-600">{{ reservasActivas }}</p>
+    </div>
+    <div class="bg-white p-4 rounded-lg shadow text-center">
+      <h3 class="text-sm text-slate-500">Solicitudes pendientes</h3>
+      <p class="text-3xl font-semibold text-indigo-600">{{ solicitudesPendientes }}</p>
+    </div>
+    <div class="bg-white p-4 rounded-lg shadow text-center">
+      <h3 class="text-sm text-slate-500">Reprogramaciones recientes</h3>
+      <p class="text-3xl font-semibold text-indigo-600">{{ reprogramacionesRecientes }}</p>
+    </div>
+    <div class="bg-white p-4 rounded-lg shadow text-center">
+      <h3 class="text-sm text-slate-500">Docentes activos hoy</h3>
+      <p class="text-3xl font-semibold text-indigo-600">{{ docentesActivos }}</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="bg-white rounded-lg shadow p-4">
+      <h3 class="text-base font-semibold mb-3">Alertas recientes</h3>
+      <ul class="divide-y divide-slate-200">
+        <li *ngFor="let a of alertas" class="py-2 flex justify-between items-center">
+          <div>
+            <p class="text-sm font-medium">{{ a.tipo }}</p>
+            <p class="text-xs text-slate-500">{{ a.descripcion }}</p>
+          </div>
+          <span class="text-xs text-slate-400">{{ a.fecha }}</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-4">
+      <h3 class="text-base font-semibold mb-3">Accesos rápidos</h3>
+      <div class="grid grid-cols-1 gap-2">
+        <a *ngFor="let ac of accesosRapidos" [routerLink]="ac.path"
+           class="block bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-sm text-center font-medium py-2 rounded-md">
+          {{ ac.label }}
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

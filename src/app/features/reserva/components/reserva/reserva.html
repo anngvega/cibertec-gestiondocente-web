@@ -1,0 +1,106 @@
+<div class="bg-white border rounded-xl p-4 space-y-3">
+  <h2 class="font-medium text-lg">Nueva reserva</h2>
+
+  <form [formGroup]="form" class="grid grid-cols-1 md:grid-cols-4 gap-3">
+    <div>
+      <label class="text-sm text-slate-600">Fecha</label>
+      <input type="date" formControlName="fecha" class="w-full border rounded px-3 py-2"
+             (change)="cargarAulasDisponibles()">
+    </div>
+
+    <div>
+      <label class="text-sm text-slate-600">Hora de inicio</label>
+      <select formControlName="horaInicio" class="w-full border rounded px-3 py-2"
+              (change)="cargarAulasDisponibles()">
+        <option value="">Seleccionar</option>
+        <option *ngFor="let h of horasDisponibles" [value]="h">{{ h }}:00</option>
+      </select>
+    </div>
+
+    <div>
+      <label class="text-sm text-slate-600">Hora de fin</label>
+      <select formControlName="horaFin" class="w-full border rounded px-3 py-2"
+              (change)="cargarAulasDisponibles()">
+        <option value="">Seleccionar</option>
+        <option *ngFor="let h of horasDisponibles" [value]="h">{{ h }}:00</option>
+      </select>
+    </div>
+
+    <div>
+      <label class="text-sm text-slate-600">Aula disponible</label>
+      <select formControlName="idAula" class="w-full border rounded px-3 py-2">
+        <option value="">Seleccionar aula</option>
+        <option *ngFor="let a of aulasDisponibles()" [value]="a.id">
+          {{ a.codigo }} — Cap: {{ a.capacidad }}
+        </option>
+      </select>
+    </div>
+
+    <div class="md:col-span-4">
+      <button type="button"
+              class="px-4 py-2 rounded bg-indigo-600 text-white disabled:opacity-60"
+              (click)="crear()"
+              [disabled]="loading()">
+        Guardar
+      </button>
+    </div>
+  </form>
+
+  <div *ngIf="error()" class="text-red-600 text-sm mt-2">{{ error() }}</div>
+</div>
+
+<div class="bg-white border rounded-xl p-4 mt-6">
+  <h2 class="font-medium text-lg mb-2">Reservas registradas</h2>
+
+  <table class="min-w-full text-sm border-collapse">
+    <thead class="bg-slate-100 border-b">
+    <tr>
+      <th class="p-2 text-left">#</th>
+      <th class="p-2 text-left">Aula</th>
+      <th class="p-2 text-left">Inicio</th>
+      <th class="p-2 text-left">Fin</th>
+      <th class="p-2 text-left">Estado</th>
+      <th class="p-2 text-center">Acción</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr *ngFor="let r of reservas(); let i = index"
+        class="border-t transition"
+        [class.opacity-50]="r.estado && r.estado.toUpperCase().trim() === 'CANCELADA'">
+
+      <td class="p-2">{{ i + 1 }}</td>
+      <td class="p-2">{{ r.aulaCodigo ?? r.idAula }}</td>
+      <td class="p-2">{{ r.inicio | date:'dd/MM/yyyy HH:mm' }}</td>
+      <td class="p-2">{{ r.fin | date:'dd/MM/yyyy HH:mm' }}</td>
+
+      <td class="p-2">
+          <span *ngIf="r.estado; else sinEstado"
+                [ngClass]="{
+                  'bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs font-medium': r.estado.toUpperCase().trim() === 'RESERVADA',
+                  'bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-xs font-medium': r.estado.toUpperCase().trim() === 'CANCELADA'
+                }">
+            {{ r.estado }}
+          </span>
+        <ng-template #sinEstado>
+          <span class="text-slate-500 italic text-xs">Sin estado</span>
+        </ng-template>
+      </td>
+
+      <td class="p-2 text-center">
+        <button *ngIf="r.estado && r.estado.toUpperCase().trim() !== 'CANCELADA'"
+                (click)="cancelar(r.id)"
+                class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600">
+          Cancelar
+        </button>
+      </td>
+    </tr>
+
+    <tr *ngIf="reservas().length === 0">
+      <td colspan="6" class="text-center text-slate-500 py-3">
+        No hay reservas registradas
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</div>

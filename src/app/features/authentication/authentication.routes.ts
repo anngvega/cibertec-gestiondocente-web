@@ -1,12 +1,12 @@
-import {Routes} from '@angular/router';
-import {Login} from './components/login/login';
+import { Routes } from '@angular/router';
 
-
-export const AUTH_ROUTES: Routes = [
+const AUTH_ROUTES: Routes = [
   {
     path: 'login',
-    component: Login
-  }
+    loadComponent: () =>
+      import('./components/login/login').then(m => m.Login)
+  },
+  { path: '**', redirectTo: 'login' }
 ];
 
 export default AUTH_ROUTES;

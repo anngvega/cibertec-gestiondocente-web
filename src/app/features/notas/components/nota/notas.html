@@ -1,0 +1,107 @@
+<div class="card">
+  <div class="flex items-center justify-between gap-3 mb-3">
+    <h2 class="text-lg font-semibold">Registrar notas</h2>
+
+    <!-- Botón Guardar solo para docentes -->
+    <button
+      *ngIf="role === 'DOCENTE'"
+      class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+      (click)="guardarTodo()"
+      [disabled]="loading">
+      💾 Guardar todo
+    </button>
+  </div>
+
+  <!-- Sección de combos solo visible para docentes -->
+  <div *ngIf="role === 'DOCENTE'" class="flex flex-col md:flex-row gap-3 mb-4">
+    <!-- Combo Curso -->
+    <div>
+      <label class="text-sm text-slate-700">Curso</label>
+      <select
+        class="border rounded px-3 py-2 w-64"
+        [ngModel]="cursoSel"
+        (ngModelChange)="onCursoChange($event)">
+        <option [ngValue]="null">-- Selecciona --</option>
+        <option *ngFor="let c of cursos" [ngValue]="c.id">{{ c.codigo }} — {{ c.nombre }}</option>
+      </select>
+    </div>
+
+    <!-- Combo Estructura -->
+    <div>
+      <label class="text-sm text-slate-700">Estructura</label>
+      <select
+        class="border rounded px-3 py-2 w-64"
+        [ngModel]="estructuraSel"
+        (ngModelChange)="onEstructuraChange($event)">
+        <option [ngValue]="null">-- Selecciona --</option>
+        <option *ngFor="let e of estructuras" [ngValue]="e.idEstructura">
+          {{ e.descripcion }}
+        </option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Mensaje para administrativos -->
+  <div *ngIf="role === 'ADMINISTRATIVO'" class="p-3 border rounded bg-slate-50 text-slate-600 mb-3">
+    Este módulo está disponible solo para visualización.
+    Los administrativos no pueden registrar ni modificar notas.
+  </div>
+
+  <!-- Tabla de notas -->
+  <div class="overflow-x-auto border rounded-lg">
+    <table class="w-full text-sm">
+      <thead class="bg-slate-100 text-slate-700">
+      <tr>
+        <th class="px-3 py-2 text-left">Código</th>
+        <th class="px-3 py-2 text-left">Alumno</th>
+        <th class="px-3 py-2 text-center w-32">Calificación</th>
+        <th class="px-3 py-2 text-center w-40">Estado</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let a of alumnosCurso" class="border-t hover:bg-slate-50">
+        <td class="px-3 py-2">{{ a.codigo }}</td>
+        <td class="px-3 py-2">{{ nombreAlumno(a) }}</td>
+        <td class="px-3 py-2 text-center">
+          <input
+            type="number"
+            class="border rounded px-2 py-1 w-20 text-center"
+            [(ngModel)]="draft[a.codigo]"
+            [readonly]="role !== 'DOCENTE'"
+            [class.bg-gray-100]="role !== 'DOCENTE'"
+            placeholder="0–20" />
+        </td>
+        <td class="px-3 py-2 text-center">
+            <span
+              class="px-2 py-0.5 rounded text-xs"
+              [ngClass]="{
+                'bg-green-100 text-green-700': estadoFila(a.codigo) === 'guardada',
+                'bg-blue-100 text-blue-700': estadoFila(a.codigo) === 'nueva',
+                'bg-yellow-100 text-yellow-700': estadoFila(a.codigo) === 'modificada',
+                'bg-gray-100 text-gray-600': estadoFila(a.codigo) === 'vacia'
+              }">
+              {{
+                estadoFila(a.codigo) === 'guardada' ? 'Guardada' :
+                  estadoFila(a.codigo) === 'nueva' ? 'Nueva' :
+                    estadoFila(a.codigo) === 'modificada' ? 'Modificada' :
+                      'Sin nota'
+              }}
+            </span>
+        </td>
+      </tr>
+
+      <!-- Sin resultados -->
+      <tr *ngIf="!loading && alumnosCurso.length === 0">
+        <td colspan="4" class="text-center text-slate-500 py-3">
+          Selecciona curso y estructura para ver los alumnos
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Mensajes -->
+  <div *ngIf="loading" class="mt-3 text-slate-500">Cargando…</div>
+  <div *ngIf="error" class="mt-3 text-red-600">⚠ {{ error }}</div>
+  <div *ngIf="mensaje" class="mt-3 text-green-700">{{ mensaje }}</div>
+</div>

@@ -1,0 +1,149 @@
+<div class="bg-white border rounded-xl p-4 space-y-4">
+  <div class="flex items-center justify-between">
+    <h2 class="text-lg font-semibold">Solicitudes de materiales</h2>
+  </div>
+
+  <!-- FORMULARIO (solo para docentes) -->
+  <form *ngIf="rolUsuario() === 'DOCENTE'" [formGroup]="form" class="grid grid-cols-1 md:grid-cols-4 gap-3">
+    <div class="md:col-span-2">
+      <label class="text-sm text-slate-600">Descripción</label>
+      <input type="text" formControlName="descripcion" class="w-full border rounded px-3 py-2"
+             placeholder="Ej. Plumones para pizarra" />
+      <div *ngIf="form.get('descripcion')?.touched && form.get('descripcion')?.invalid"
+           class="text-xs text-red-600 mt-1">
+        La descripción es obligatoria
+      </div>
+    </div>
+
+    <div>
+      <label class="text-sm text-slate-600">Cantidad</label>
+      <input type="number" formControlName="cantidad" class="w-full border rounded px-3 py-2" min="1" />
+    </div>
+
+    <div>
+      <label class="text-sm text-slate-600">Unidad</label>
+      <input type="text" formControlName="unidad" class="w-full border rounded px-3 py-2"
+             placeholder="unidad(es)" />
+    </div>
+
+    <div class="md:col-span-4">
+      <button type="button" (click)="crear()" [disabled]="loading()"
+              class="px-4 py-2 rounded bg-indigo-600 text-white disabled:opacity-60">
+        Crear solicitud
+      </button>
+      <span *ngIf="loading()" class="text-sm text-slate-500 ml-2">Procesando...</span>
+    </div>
+  </form>
+
+  <!-- FILTROS -->
+  <div class="flex flex-col md:flex-row md:items-end gap-3">
+    <div>
+      <label class="text-sm text-slate-600">Estado</label>
+      <select class="border rounded px-3 py-2 w-52"
+              [ngModel]="filtroEstado()" (ngModelChange)="filtroEstado.set($event || null); aplicarFiltros()">
+        <option [ngValue]="null">-- Todos --</option>
+        <option value="PENDIENTE">PENDIENTE</option>
+        <option value="APROBADA">APROBADA</option>
+        <option value="RECHAZADA">RECHAZADA</option>
+        <option value="CANCELADA">CANCELADA</option>
+      </select>
+    </div>
+
+    <div *ngIf="rolUsuario() === 'ADMINISTRATIVO'">
+      <label class="text-sm text-slate-600">Docente (ID)</label>
+      <input type="number" class="border rounded px-3 py-2 w-40"
+             [ngModel]="filtroDocente()" (ngModelChange)="filtroDocente.set($event || null); aplicarFiltros()" />
+    </div>
+
+    <div class="grow"></div>
+    <div>
+      <button type="button" class="px-3 py-2 border rounded hover:bg-slate-50" (click)="limpiarFiltros()">Limpiar</button>
+    </div>
+  </div>
+
+  <!-- TABLA -->
+  <div class="overflow-x-auto">
+    <table class="min-w-full text-sm border-collapse">
+      <thead class="bg-slate-100 border-b">
+      <tr>
+        <th class="p-2 text-left cursor-pointer" (click)="ordenarPorColumna('idMaterial')">#</th>
+        <th class="p-2 text-left cursor-pointer" (click)="ordenarPorColumna('descripcion')">Descripción</th>
+        <th class="p-2 text-left cursor-pointer" (click)="ordenarPorColumna('idDocente')">Docente</th>
+        <th class="p-2 text-left">Cantidad</th>
+        <th class="p-2 text-left">Unidad</th>
+        <th class="p-2 text-left cursor-pointer" (click)="ordenarPorColumna('fechaCreacion')">Fecha sol.</th>
+        <th class="p-2 text-left cursor-pointer" (click)="ordenarPorColumna('estado')">Estado</th>
+        <th class="p-2 text-center">Acciones</th>
+      </tr>
+      </thead>
+
+      <tbody>
+      <tr *ngFor="let r of pagina()?.contenido" class="border-t">
+        <td class="p-2">{{ r.idMaterial }}</td>
+        <td class="p-2">{{ r.descripcion }}</td>
+        <td class="p-2">{{ r.nombreDocente }}</td>
+        <td class="p-2">{{ r.cantidad }}</td>
+        <td class="p-2">{{ r.unidad || '-' }}</td>
+        <td class="p-2">{{ r.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}</td>
+        <td class="p-2">
+          <span [ngClass]="chipClass(r.estado)">{{ r.estado }}</span>
+        </td>
+
+        <td class="p-2 text-center space-x-2">
+          <ng-container *ngIf="rolUsuario() === 'ADMINISTRATIVO'">
+            <button *ngIf="r.estado === 'PENDIENTE'"
+                    class="px-2 py-1 rounded border text-xs text-green-700 border-green-300 hover:bg-green-100"
+                    (click)="aprobar(r)">Aprobar</button>
+            <button *ngIf="r.estado === 'PENDIENTE'"
+                    class="px-2 py-1 rounded border text-xs text-red-700 border-red-300 hover:bg-red-100"
+                    (click)="rechazar(r)">Rechazar</button>
+            <button *ngIf="r.estado === 'APROBADA'"
+                    class="px-2 py-1 rounded border text-xs text-slate-700 border-slate-300 hover:bg-slate-100"
+                    (click)="cancelar(r)">Cancelar</button>
+          </ng-container>
+
+          <ng-container *ngIf="rolUsuario() === 'DOCENTE' && r.idDocente === docenteActualId() && r.estado === 'PENDIENTE'">
+            <button class="px-2 py-1 rounded border text-xs hover:bg-slate-50" (click)="cancelar(r)">Cancelar</button>
+          </ng-container>
+        </td>
+      </tr>
+
+      <tr *ngIf="pagina()?.vacia">
+        <td colspan="8" class="text-center text-slate-500 py-3">Sin resultados</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- PAGINACIÓN -->
+  <div class="flex items-center justify-between mt-2">
+    <div class="text-sm text-slate-600">
+      Tamaño:
+      <select class="border rounded px-2 py-1" [ngModel]="size()" (ngModelChange)="cambiarTamanio(+$event)">
+        <option [ngValue]="5">5</option>
+        <option [ngValue]="10">10</option>
+        <option [ngValue]="20">20</option>
+      </select>
+    </div>
+
+    <div class="flex items-center gap-1">
+      <button class="px-2 py-1 border rounded" [disabled]="pagina()?.primera" (click)="irAPagina(0)">«</button>
+      <button class="px-2 py-1 border rounded" [disabled]="pagina()?.primera"
+              (click)="irAPagina((pagina()?.paginaActual ?? 0)-1)">‹</button>
+
+      <button *ngFor="let p of rangoPaginas()" class="px-3 py-1 border rounded"
+              [ngClass]="{'bg-indigo-600 text-white border-indigo-600': p === pagina()?.paginaActual}"
+              (click)="irAPagina(p)">
+        {{ p + 1 }}
+      </button>
+
+      <button class="px-2 py-1 border rounded" [disabled]="pagina()?.ultima"
+              (click)="irAPagina((pagina()?.paginaActual ?? 0)+1)">›</button>
+      <button class="px-2 py-1 border rounded" [disabled]="pagina()?.ultima"
+              (click)="irAPagina((pagina()?.totalPaginas ?? 1)-1)">»</button>
+    </div>
+  </div>
+
+  <div *ngIf="error()" class="text-red-600 text-sm mt-2">⚠️ {{ error() }}</div>
+  <div *ngIf="success()" class="text-green-600 text-sm mt-2">{{ success() }}</div>
+</div>

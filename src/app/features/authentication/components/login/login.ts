@@ -1,16 +1,13 @@
-import {Component} from '@angular/core';
-import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
-import {CommonModule} from '@angular/common';
-import {AuthService} from '../../../../core/auth/auth.service';
-import {Router} from '@angular/router';
+import { Component } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { AuthService } from '../../../../core/auth/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule
-  ],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './login.html'
 })
 export class Login {
@@ -21,16 +18,8 @@ export class Login {
   constructor(private fb: FormBuilder, private authService: AuthService, private router: Router) {
     this.form = this.fb.group({
       username: ['', [Validators.required, Validators.minLength(3)]],
-      password: ['', [Validators.required, Validators.minLength(6)]]
+      password: ['', [Validators.required, Validators.minLength(3)]]
     });
-  }
-
-  get username() {
-    return this.form.get('username');
-  }
-
-  get password() {
-    return this.form.get('password');
   }
 
   onSubmit() {
@@ -38,8 +27,7 @@ export class Login {
       this.form.markAllAsTouched();
       return;
     }
-
-    this.loading = true;
+    this.loading = true; this.error = null;
     this.authService.signIn(this.form.value).subscribe({
       next: () => {
         this.loading = false;
